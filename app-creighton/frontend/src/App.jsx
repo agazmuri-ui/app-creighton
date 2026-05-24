@@ -23,7 +23,7 @@ function Layout() {
           </NavLink>
           <NavLink to="/pacientes" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <span className="nav-icon">👩‍⚕️</span>
-            <span>Casos</span>
+            <span>Usuarias</span>
           </NavLink>
           <NavLink to="/caja" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <span className="nav-icon">💰</span>

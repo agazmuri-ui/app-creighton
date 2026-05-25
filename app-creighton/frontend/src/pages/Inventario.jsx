@@ -180,8 +180,12 @@ export default function Inventario() {
   async function cargar() {
     setLoading(true);
     try {
-      const data = await api('/api/materiales');
-      setMateriales(data);
+     const data = await api('/api/materiales');
+      setMateriales(data.sort((a, b) => {
+        const numA = parseInt(a.nombre);
+        const numB = parseInt(b.nombre);
+        return numA - numB;
+      }));
     } catch (e) {
       alert(e.message);
     } finally {

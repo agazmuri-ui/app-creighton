@@ -206,14 +206,9 @@ export default function Inventario() {
           <h1 className="page-title">Inventario</h1>
           <p className="page-sub">{materiales.length} materiales registrados</p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-ghost" onClick={() => setModal('ajuste')}>
-            ↕ Ajustar stock
-          </button>
-          <button className="btn btn-primary" onClick={() => setModal('nuevo')}>
-            + Nuevo material
-          </button>
-        </div>
+<button className="btn btn-primary" onClick={() => setModal('ajuste')}>
+          ↕ Ajustar stock
+        </button>
       </div>
 
       {bajoStock.length > 0 && (

@@ -3,7 +3,7 @@ import Inventario from './pages/Inventario';
 import Pacientes from './pages/Pacientes';
 import PacienteDetalle from './pages/PacienteDetalle';
 import Caja from './pages/Caja';
-import foto from './Catalina Quiroga.png';
+import foto from './CatalinaQuiroga.png';
 import './styles.css';
 
 function Home() {

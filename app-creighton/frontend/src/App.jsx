@@ -48,11 +48,23 @@ function Layout() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
-            <div className="logo-icon">✦</div>
-            <div>
-              <div className="logo-title">Creighton</div>
-              <div className="logo-sub">Practitioner</div>
+          <NavLink to="/" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: 'inherit', padding: '8px 0' }}>
+            <img
+              src={foto}
+              alt="Catalina Quiroga"
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                objectPosition: 'top',
+                marginBottom: 10,
+                border: '2px solid var(--sage-light)',
+              }}
+            />
+            <div style={{ textAlign: 'center' }}>
+              <div className="logo-title">Catalina Quiroga</div>
+              <div className="logo-sub">Creighton Practitioner</div>
             </div>
           </NavLink>
         </div>

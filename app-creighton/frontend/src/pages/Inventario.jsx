@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 
 const MATERIALES_FIJOS = [
-  'Manual de usuario',
-  'Diccionario ilustrado',
-  'Set de Estampas iniciales',
-  'Gráficas',
-  'Formulario general de inicio',
-  'Estampas amarillas con bebé',
-  'Estampas amarillas lisas',
-  'Spice Index',
-  'Revisión de ciclos para categorías reproductivas',
-  'Forma de seguimiento',
+  '1.Manual de usuario',
+  '2.Diccionario ilustrado',
+  '3.Set de Estampas iniciales',
+  '4.Gráficas',
+  '5.Formulario general de inicio',
+  '6.Estampas amarillas con bebé',
+  '7.Estampas amarillas lisas',
+  '8.Spice Index',
+  '9.Revisión de ciclos para categorías reproductivas',
+  '10.Forma de seguimiento',
 ];
 
 function MovimientoModal({ material, onClose, onDone }) {

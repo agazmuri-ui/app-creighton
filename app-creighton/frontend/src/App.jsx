@@ -5,19 +5,58 @@ import PacienteDetalle from './pages/PacienteDetalle';
 import Caja from './pages/Caja';
 import './styles.css';
 
+function Home() {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '80vh',
+      textAlign: 'center',
+    }}>
+      <div style={{
+        width: 120,
+        height: 120,
+        borderRadius: '50%',
+        background: 'var(--cream-dark)',
+        marginBottom: 24,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 48,
+        border: '3px solid var(--sage-light)',
+      }}>
+        👩‍⚕️
+      </div>
+      <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 36, marginBottom: 8 }}>
+        Creighton Practitioner
+      </h1>
+      <p style={{ fontSize: 20, color: 'var(--ink-soft)', marginBottom: 4 }}>
+        Catalina Quiroga
+      </p>
+      <p style={{ fontSize: 14, color: 'var(--ink-faint)' }}>
+        Santiago, Chile
+      </p>
+    </div>
+  );
+}
+
 function Layout() {
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="logo-icon">✦</div>
-          <div>
-            <div className="logo-title">Creighton</div>
-            <div className="logo-sub">Practitioner</div>
-          </div>
+          <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
+            <div className="logo-icon">✦</div>
+            <div>
+              <div className="logo-title">Creighton</div>
+              <div className="logo-sub">Practitioner</div>
+            </div>
+          </NavLink>
         </div>
         <nav className="sidebar-nav">
-          <NavLink to="/" end className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+          <NavLink to="/inventario" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <span className="nav-icon">📦</span>
             <span>Inventario</span>
           </NavLink>
@@ -37,7 +76,8 @@ function Layout() {
       </aside>
       <main className="main">
         <Routes>
-          <Route path="/" element={<Inventario />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/inventario" element={<Inventario />} />
           <Route path="/pacientes" element={<Pacientes />} />
           <Route path="/pacientes/:id" element={<PacienteDetalle />} />
           <Route path="/caja" element={<Caja />} />

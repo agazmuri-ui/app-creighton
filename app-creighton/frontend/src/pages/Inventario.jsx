@@ -14,6 +14,101 @@ const MATERIALES_FIJOS = [
   '10.Forma de seguimiento',
 ];
 
+function AjusteRapidoModal({ materiales, onClose, onDone }) {
+  const [lista, setLista] = useState(materiales);
+  const [ajustando, setAjustando] = useState({});
+
+  async function ajustar(m, tipo) {
+    setAjustando(a => ({ ...a, [m.id]: true }));
+    try {
+      await api('/api/movimientos', {
+        method: 'POST',
+        body: { material_id: m.id, tipo, cantidad: 1, motivo: '' },
+      });
+      setLista(l => l.map(x =>
+        x.id === m.id
+          ? { ...x, cantidad: tipo === 'entrada' ? x.cantidad + 1 : Math.max(0, x.cantidad - 1) }
+          : x
+      ));
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setAjustando(a => ({ ...a, [m.id]: false }));
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 620 }} onClick={e => e.stopPropagation()}>
+        <h2 className="modal-title">Ajustar stock</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+          {lista.map(m => {
+            const agotado = m.cantidad === 0;
+            const bajo = m.cantidad > 0 && m.cantidad <= m.stock_minimo;
+            return (
+              <div key={m.id} style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: 'var(--cream)',
+                borderRadius: 10,
+                borderLeft: `3px solid ${agotado ? 'var(--rose)' : bajo ? 'var(--amber)' : 'var(--sage)'}`,
+              }}>
+                <div style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>{m.nombre}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <button
+                    onClick={() => ajustar(m, 'salida')}
+                    disabled={ajustando[m.id] || m.cantidad === 0}
+                    style={{
+                      width: 32, height: 32,
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: m.cantidad === 0 ? 'var(--cream-dark)' : '#fdecea',
+                      color: m.cantidad === 0 ? 'var(--ink-faint)' : 'var(--rose)',
+                      fontSize: 20, fontWeight: 700,
+                      cursor: m.cantidad === 0 ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >−</button>
+                  <div style={{ 
+                    width: 36, 
+                    textAlign: 'center', 
+                    fontFamily: 'DM Serif Display, serif', 
+                    fontSize: 22,
+                    color: agotado ? 'var(--rose)' : bajo ? 'var(--amber)' : 'var(--ink)',
+                  }}>
+                    {m.cantidad}
+                  </div>
+                  <button
+                    onClick={() => ajustar(m, 'entrada')}
+                    disabled={ajustando[m.id]}
+                    style={{
+                      width: 32, height: 32,
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: '#e6f4ec',
+                      color: 'var(--sage-dark)',
+                      fontSize: 20, fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >+</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="modal-actions">
+          <button className="btn btn-primary" onClick={() => { onDone(); onClose(); }}>
+            Listo
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MaterialModal({ material, onClose, onDone }) {
   const [form, setForm] = useState(material || { nombre: MATERIALES_FIJOS[0], cantidad: 0, unidad: 'unidad', stock_minimo: 1 });
   const [loading, setLoading] = useState(false);
@@ -81,7 +176,6 @@ export default function Inventario() {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
-  const [ajustando, setAjustando] = useState({});
 
   async function cargar() {
     setLoading(true);
@@ -96,26 +190,6 @@ export default function Inventario() {
   }
 
   useEffect(() => { cargar(); }, []);
-
-  async function ajustar(material, tipo) {
-    setAjustando(a => ({ ...a, [material.id]: true }));
-    try {
-      await api('/api/movimientos', {
-        method: 'POST',
-        body: { material_id: material.id, tipo, cantidad: 1, motivo: '' },
-      });
-      // Actualizar cantidad localmente para respuesta inmediata
-      setMateriales(mats => mats.map(m =>
-        m.id === material.id
-          ? { ...m, cantidad: tipo === 'entrada' ? m.cantidad + 1 : Math.max(0, m.cantidad - 1) }
-          : m
-      ));
-    } catch (e) {
-      alert(e.message);
-    } finally {
-      setAjustando(a => ({ ...a, [material.id]: false }));
-    }
-  }
 
   async function eliminar(id) {
     if (!confirm('¿Eliminar este material?')) return;
@@ -132,9 +206,14 @@ export default function Inventario() {
           <h1 className="page-title">Inventario</h1>
           <p className="page-sub">{materiales.length} materiales registrados</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setModal('nuevo')}>
-          + Nuevo material
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-ghost" onClick={() => setModal('ajuste')}>
+            ↕ Ajustar stock
+          </button>
+          <button className="btn btn-primary" onClick={() => setModal('nuevo')}>
+            + Nuevo material
+          </button>
+        </div>
       </div>
 
       {bajoStock.length > 0 && (
@@ -143,98 +222,67 @@ export default function Inventario() {
         </div>
       )}
 
-      {loading ? (
-        <div className="empty"><div className="empty-text">Cargando...</div></div>
-      ) : materiales.length === 0 ? (
-        <div className="empty">
-          <div className="empty-icon">📦</div>
-          <div className="empty-text">Sin materiales. Agrega el primero.</div>
-        </div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: 16,
-        }}>
-          {materiales.map(m => {
-            const bajo = m.cantidad > 0 && m.cantidad <= m.stock_minimo;
-            const agotado = m.cantidad === 0;
-            return (
-              <div key={m.id} style={{
-                background: 'var(--white)',
-                borderRadius: 'var(--radius)',
-                boxShadow: 'var(--shadow)',
-                padding: '20px 24px',
-                borderLeft: `4px solid ${agotado ? 'var(--rose)' : bajo ? 'var(--amber)' : 'var(--sage)'}`,
-              }}>
-                {/* Nombre y badge */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.4, flex: 1, paddingRight: 8 }}>
-                    {m.nombre}
-                  </div>
-                  {agotado
-                    ? <span className="badge badge-red">Agotado</span>
-                    : bajo
-                    ? <span className="badge badge-amber">Stock bajo</span>
-                    : <span className="badge badge-green">OK</span>
-                  }
-                </div>
+      <div className="card">
+        {loading ? (
+          <div className="empty"><div className="empty-text">Cargando...</div></div>
+        ) : materiales.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">📦</div>
+            <div className="empty-text">Sin materiales. Agrega el primero.</div>
+          </div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Cantidad</th>
+                  <th>Unidad</th>
+                  <th>Stock mínimo</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {materiales.map(m => {
+                  const bajo = m.cantidad > 0 && m.cantidad <= m.stock_minimo;
+                  const agotado = m.cantidad === 0;
+                  return (
+                    <tr key={m.id}>
+                      <td><strong>{m.nombre}</strong></td>
+                      <td>{m.cantidad}</td>
+                      <td style={{ color: 'var(--ink-soft)' }}>{m.unidad}</td>
+                      <td style={{ color: 'var(--ink-soft)' }}>{m.stock_minimo}</td>
+                      <td>
+                        {agotado
+                          ? <span className="badge badge-red">Agotado</span>
+                          : bajo
+                          ? <span className="badge badge-amber">Stock bajo</span>
+                          : <span className="badge badge-green">OK</span>
+                        }
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button className="btn btn-sm btn-ghost" onClick={() => { setSelected(m); setModal('editar'); }}>✏️</button>
+                          <button className="btn btn-sm btn-danger" onClick={() => eliminar(m.id)}>🗑</button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-                {/* Contador */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 16 }}>
-                  <button
-                    onClick={() => ajustar(m, 'salida')}
-                    disabled={ajustando[m.id] || m.cantidad === 0}
-                    style={{
-                      width: 40, height: 40,
-                      borderRadius: '50%',
-                      border: 'none',
-                      background: m.cantidad === 0 ? 'var(--cream-dark)' : '#fdecea',
-                      color: m.cantidad === 0 ? 'var(--ink-faint)' : 'var(--rose)',
-                      fontSize: 22, fontWeight: 700,
-                      cursor: m.cantidad === 0 ? 'not-allowed' : 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    −
-                  </button>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontFamily: 'DM Serif Display, serif', fontSize: 36, lineHeight: 1 }}>
-                      {m.cantidad}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--ink-faint)', marginTop: 2 }}>{m.unidad}</div>
-                  </div>
-                  <button
-                    onClick={() => ajustar(m, 'entrada')}
-                    disabled={ajustando[m.id]}
-                    style={{
-                      width: 40, height: 40,
-                      borderRadius: '50%',
-                      border: 'none',
-                      background: '#e6f4ec',
-                      color: 'var(--sage-dark)',
-                      fontSize: 22, fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
-
-                {/* Acciones */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, borderTop: '1px solid var(--cream-dark)', paddingTop: 12 }}>
-                  <button className="btn btn-sm btn-ghost" onClick={() => { setSelected(m); setModal('editar'); }}>✏️</button>
-                  <button className="btn btn-sm btn-danger" onClick={() => eliminar(m.id)}>🗑</button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      {modal === 'ajuste' && (
+        <AjusteRapidoModal
+          materiales={materiales}
+          onClose={() => setModal(null)}
+          onDone={cargar}
+        />
       )}
-
       {modal === 'nuevo' && (
         <MaterialModal onClose={() => setModal(null)} onDone={() => { setModal(null); cargar(); }} />
       )}

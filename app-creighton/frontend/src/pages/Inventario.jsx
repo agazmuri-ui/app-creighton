@@ -15,25 +15,41 @@ const MATERIALES_FIJOS = [
 ];
 
 function AjusteRapidoModal({ materiales, onClose, onDone }) {
-  const [lista, setLista] = useState(materiales);
+  // Construir lista completa con los 10 fijos, rellenando con cantidad 0 los que no existen
+  const listaCompleta = MATERIALES_FIJOS.map(nombre => {
+    const existente = materiales.find(m => m.nombre === nombre);
+    return existente || { id: null, nombre, cantidad: 0, unidad: 'unidad', stock_minimo: 1 };
+  });
+
+  const [lista, setLista] = useState(listaCompleta);
   const [ajustando, setAjustando] = useState({});
 
   async function ajustar(m, tipo) {
-    setAjustando(a => ({ ...a, [m.id]: true }));
+    const key = m.id || m.nombre;
+    setAjustando(a => ({ ...a, [key]: true }));
     try {
-      await api('/api/movimientos', {
-        method: 'POST',
-        body: { material_id: m.id, tipo, cantidad: 1, motivo: '' },
-      });
-      setLista(l => l.map(x =>
-        x.id === m.id
-          ? { ...x, cantidad: tipo === 'entrada' ? x.cantidad + 1 : Math.max(0, x.cantidad - 1) }
-          : x
-      ));
+      if (!m.id) {
+        // El material fue eliminado — recrearlo con cantidad 1
+        const nuevo = await api('/api/materiales', {
+          method: 'POST',
+          body: { nombre: m.nombre, cantidad: 1, unidad: 'unidad', stock_minimo: 1 },
+        });
+        setLista(l => l.map(x => x.nombre === m.nombre ? { ...nuevo } : x));
+      } else {
+        await api('/api/movimientos', {
+          method: 'POST',
+          body: { material_id: m.id, tipo, cantidad: 1, motivo: '' },
+        });
+        setLista(l => l.map(x =>
+          x.id === m.id
+            ? { ...x, cantidad: tipo === 'entrada' ? x.cantidad + 1 : Math.max(0, x.cantidad - 1) }
+            : x
+        ));
+      }
     } catch (e) {
       alert(e.message);
     } finally {
-      setAjustando(a => ({ ...a, [m.id]: false }));
+      setAjustando(a => ({ ...a, [key]: false }));
     }
   }
 
@@ -45,8 +61,9 @@ function AjusteRapidoModal({ materiales, onClose, onDone }) {
           {lista.map(m => {
             const agotado = m.cantidad === 0;
             const bajo = m.cantidad > 0 && m.cantidad <= m.stock_minimo;
+            const key = m.id || m.nombre;
             return (
-              <div key={m.id} style={{
+              <div key={key} style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -59,7 +76,7 @@ function AjusteRapidoModal({ materiales, onClose, onDone }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <button
                     onClick={() => ajustar(m, 'salida')}
-                    disabled={ajustando[m.id] || m.cantidad === 0}
+                    disabled={ajustando[key] || m.cantidad === 0}
                     style={{
                       width: 32, height: 32,
                       borderRadius: '50%',
@@ -71,17 +88,18 @@ function AjusteRapidoModal({ materiales, onClose, onDone }) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                   >−</button>
-                  <div style={{ 
-                    width: 36, 
-                    textAlign: 'center', 
+                  <div style={{
+                    width: 36,
+                    textAlign: 'center',
                     fontSize: 16,
                     fontWeight: 600,
                     color: agotado ? 'var(--rose)' : bajo ? 'var(--amber)' : 'var(--ink)',
                   }}>
                     {m.cantidad}
-                  </div>                  <button
+                  </div>
+                  <button
                     onClick={() => ajustar(m, 'entrada')}
-                    disabled={ajustando[m.id]}
+                    disabled={ajustando[key]}
                     style={{
                       width: 32, height: 32,
                       borderRadius: '50%',
@@ -179,7 +197,7 @@ export default function Inventario() {
   async function cargar() {
     setLoading(true);
     try {
-     const data = await api('/api/materiales');
+      const data = await api('/api/materiales');
       setMateriales(data.sort((a, b) => {
         const numA = parseInt(a.nombre);
         const numB = parseInt(b.nombre);
@@ -209,7 +227,7 @@ export default function Inventario() {
           <h1 className="page-title">Inventario</h1>
           <p className="page-sub">{materiales.length} materiales registrados</p>
         </div>
-<button className="btn btn-primary" onClick={() => setModal('ajuste')}>
+        <button className="btn btn-primary" onClick={() => setModal('ajuste')}>
           ↕ Ajustar stock
         </button>
       </div>
@@ -226,7 +244,7 @@ export default function Inventario() {
         ) : materiales.length === 0 ? (
           <div className="empty">
             <div className="empty-icon">📦</div>
-            <div className="empty-text">Sin materiales. Agrega el primero.</div>
+            <div className="empty-text">Sin materiales.</div>
           </div>
         ) : (
           <div className="table-wrap">
@@ -280,9 +298,6 @@ export default function Inventario() {
           onClose={() => setModal(null)}
           onDone={cargar}
         />
-      )}
-      {modal === 'nuevo' && (
-        <MaterialModal onClose={() => setModal(null)} onDone={() => { setModal(null); cargar(); }} />
       )}
       {modal === 'editar' && (
         <MaterialModal material={selected} onClose={() => setModal(null)} onDone={() => { setModal(null); cargar(); }} />

@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 
+const MATERIALES_FIJOS = [
+  'Manual de usuario',
+  'Diccionario ilustrado',
+  'Set de Estampas iniciales',
+  'Gráficas',
+  'Formulario general de inicio',
+  'Estampas amarillas con bebé',
+  'Estampas amarillas lisas',
+  'Spice Index',
+  'Revisión de ciclos para categorías reproductivas',
+  'Forma de seguimiento',
+];
+
 function MovimientoModal({ material, onClose, onDone }) {
   const [tipo, setTipo] = useState('entrada');
   const [cantidad, setCantidad] = useState(1);
@@ -45,7 +58,7 @@ function MovimientoModal({ material, onClose, onDone }) {
         </div>
         <div className="form-group" style={{ marginTop: 16 }}>
           <label>Motivo (opcional)</label>
-          <input type="text" value={motivo} onChange={e => setMotivo(e.target.value)} placeholder="Ej: compra mensual, entrega a paciente..." />
+          <input type="text" value={motivo} onChange={e => setMotivo(e.target.value)} placeholder="Ej: compra mensual, entrega a usuaria..." />
         </div>
         <div className="modal-actions">
           <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
@@ -59,7 +72,7 @@ function MovimientoModal({ material, onClose, onDone }) {
 }
 
 function MaterialModal({ material, onClose, onDone }) {
-  const [form, setForm] = useState(material || { nombre: '', cantidad: 0, unidad: 'unidad', stock_minimo: 1 });
+  const [form, setForm] = useState(material || { nombre: MATERIALES_FIJOS[0], cantidad: 0, unidad: 'unidad', stock_minimo: 1 });
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit() {
@@ -84,8 +97,16 @@ function MaterialModal({ material, onClose, onDone }) {
       <div className="modal" onClick={e => e.stopPropagation()}>
         <h2 className="modal-title">{material ? 'Editar material' : 'Nuevo material'}</h2>
         <div className="form-group" style={{ marginBottom: 16 }}>
-          <label>Nombre</label>
-          <input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} placeholder="Nombre del material" />
+          <label>Material</label>
+          {material ? (
+            <input value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+          ) : (
+            <select value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })}>
+              {MATERIALES_FIJOS.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="form-row">
           <div className="form-group">
@@ -115,7 +136,7 @@ function MaterialModal({ material, onClose, onDone }) {
 export default function Inventario() {
   const [materiales, setMateriales] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // null | 'nuevo' | 'editar' | 'movimiento'
+  const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
 
   async function cargar() {

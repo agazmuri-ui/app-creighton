@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 
-const CATEGORIAS_INGRESO = ['Consulta', 'Material', 'Otro'];
-const CATEGORIAS_EGRESO = ['Insumo', 'Capacitación', 'Otro'];
+const CATEGORIAS_INGRESO = ['Seguimiento', 'Materiales'];
+const CATEGORIAS_EGRESO = ['Materiales', 'Capacitación'];
 
 function TransaccionModal({ onClose, onDone }) {
   const [form, setForm] = useState({
     fecha: new Date().toISOString().split('T')[0],
     tipo: 'ingreso',
     monto: '',
-    categoria: 'Consulta',
+    categoria: 'Seguimiento',
     descripcion: '',
   });
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ function TransaccionModal({ onClose, onDone }) {
   const categorias = form.tipo === 'ingreso' ? CATEGORIAS_INGRESO : CATEGORIAS_EGRESO;
 
   function handleTipo(t) {
-    setForm({ ...form, tipo: t, categoria: t === 'ingreso' ? 'Consulta' : 'Insumo' });
+    setForm({ ...form, tipo: t, categoria: t === 'ingreso' ? 'Seguimiento' : 'Materiales' });
   }
 
   async function handleSubmit() {
@@ -143,7 +143,6 @@ export default function Caja() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-label">Ingresos</div>
@@ -173,7 +172,6 @@ export default function Caja() {
         </div>
       </div>
 
-      {/* Tabla */}
       <div className="card">
         {loading ? (
           <div className="empty"><div className="empty-text">Cargando...</div></div>

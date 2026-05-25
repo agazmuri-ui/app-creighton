@@ -55,7 +55,7 @@ function AjusteRapidoModal({ materiales, onClose, onDone }) {
                 borderRadius: 10,
                 borderLeft: `3px solid ${agotado ? 'var(--rose)' : bajo ? 'var(--amber)' : 'var(--sage)'}`,
               }}>
-                <div style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>{m.nombre}</div>
+                <div style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>{m.nombre}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <button
                     onClick={() => ajustar(m, 'salida')}
@@ -74,13 +74,12 @@ function AjusteRapidoModal({ materiales, onClose, onDone }) {
                   <div style={{ 
                     width: 36, 
                     textAlign: 'center', 
-                    fontFamily: 'DM Serif Display, serif', 
-                    fontSize: 22,
+                    fontSize: 16,
+                    fontWeight: 600,
                     color: agotado ? 'var(--rose)' : bajo ? 'var(--amber)' : 'var(--ink)',
                   }}>
                     {m.cantidad}
-                  </div>
-                  <button
+                  </div>                  <button
                     onClick={() => ajustar(m, 'entrada')}
                     disabled={ajustando[m.id]}
                     style={{

@@ -3,6 +3,7 @@ import Inventario from './pages/Inventario';
 import Pacientes from './pages/Pacientes';
 import PacienteDetalle from './pages/PacienteDetalle';
 import Caja from './pages/Caja';
+import foto from './Catalina Quiroga.png';
 import './styles.css';
 
 function Home() {
@@ -15,20 +16,20 @@ function Home() {
       minHeight: '80vh',
       textAlign: 'center',
     }}>
-      <div style={{
-        width: 120,
-        height: 120,
-        borderRadius: '50%',
-        background: 'var(--cream-dark)',
-        marginBottom: 24,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 48,
-        border: '3px solid var(--sage-light)',
-      }}>
-        👩‍⚕️
-      </div>
+      <img
+        src={foto}
+        alt="Catalina Quiroga"
+        style={{
+          width: 150,
+          height: 150,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          objectPosition: 'top',
+          marginBottom: 24,
+          border: '3px solid var(--sage-light)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+        }}
+      />
       <h1 style={{ fontFamily: 'DM Serif Display, serif', fontSize: 36, marginBottom: 8 }}>
         Creighton Practitioner
       </h1>
